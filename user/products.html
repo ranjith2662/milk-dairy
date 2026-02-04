@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browse Products - Milk Dairy</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container d-flex justify-between align-center">
+            <div class="nav-brand">Milk Dairy</div>
+            <div class="nav-links">
+                <a href="user-dashboard.html">Dashboard</a>
+                <a href="#" class="active" style="color:var(--primary-color)">Products</a>
+                <a href="cart.html">Cart</a>
+                <a href="orders.html">My Orders</a>
+                <a href="profile.html">Profile</a>
+                <a href="#" onclick="logout()">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2>Fresh Products</h2>
+        <div class="product-grid mt-2" id="productsGrid">
+            <!-- Rendered via JS -->
+        </div>
+    </div>
+
+    <script src="../js/main.js"></script>
+    <script>
+        checkAuth('user');
+
+        function renderProducts() {
+            const products = getProducts();
+            const grid = document.getElementById('productsGrid');
+            grid.innerHTML = '';
+
+            products.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'card animate-slide-up';
+                card.innerHTML = `
+                    <div style="overflow:hidden; border-radius: var(--radius);">
+                        <img src="${p.image}" alt="${p.name}" class="product-image">
+                    </div>
+                    <h3 class="mt-1">${p.name}</h3>
+                    <p style="color: #666; font-size: 0.9rem;">${p.description || 'Fresh and healthy'}</p>
+                    <div class="d-flex justify-between align-center mt-1">
+                        <span style="font-weight: bold; font-size: 1.1rem;">₹${p.price}</span>
+                        <button class="btn btn-primary" onclick='addToCart(${JSON.stringify(p)})'>Add to Cart</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        renderProducts();
+    </script>
+</body>
+
+</html>

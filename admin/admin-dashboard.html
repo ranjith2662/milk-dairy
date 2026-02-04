@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Milk Dairy</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container d-flex justify-between align-center">
+            <div class="nav-brand">Milk Dairy Admin</div>
+            <div class="nav-links">
+                <a href="#" class="active">Dashboard</a>
+                <a href="manage-products.html">Products</a>
+                <a href="manage-orders.html">Orders</a>
+                <a href="manage-users.html">Users</a>
+                <a href="#" onclick="logout()">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2>Dashboard Overview</h2>
+
+        <div class="product-grid mt-2" style="grid-template-columns: repeat(3, 1fr);">
+            <div class="card text-center">
+                <h3>Total Products</h3>
+                <h1 id="totalProducts" style="font-size: 3rem; color: var(--primary-color);">0</h1>
+                <a href="manage-products.html" class="btn btn-primary mt-1">Manage</a>
+            </div>
+
+            <div class="card text-center">
+                <h3>Total Orders</h3>
+                <h1 id="totalOrders" style="font-size: 3rem; color: var(--secondary-color);">0</h1>
+                <a href="manage-orders.html" class="btn btn-secondary mt-1">View</a>
+            </div>
+
+            <div class="card text-center">
+                <h3>Total Users</h3>
+                <h1 id="totalUsers" style="font-size: 3rem; color: #666;">0</h1>
+                <a href="manage-users.html" class="btn mt-1" style="background: #ddd;">Manage</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/main.js"></script>
+    <script>
+        checkAuth('admin');
+
+        // Load stats
+        const db = getDB();
+        document.getElementById('totalProducts').innerText = db.products.length;
+        document.getElementById('totalOrders').innerText = db.orders.length;
+        document.getElementById('totalUsers').innerText = db.users.filter(u => u.role === 'user').length;
+    </script>
+</body>
+
+</html>

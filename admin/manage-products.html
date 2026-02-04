@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Products - Milk Dairy</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 400px;
+            border-radius: var(--radius);
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container d-flex justify-between align-center">
+            <div class="nav-brand">Milk Dairy Admin</div>
+            <div class="nav-links">
+                <a href="admin-dashboard.html">Dashboard</a>
+                <a href="#" class="active" style="color:var(--secondary-color)">Products</a>
+                <a href="manage-orders.html">Orders</a>
+                <a href="manage-users.html">Users</a>
+                <a href="#" onclick="logout()">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="d-flex justify-between align-center">
+            <h2>Manage Products</h2>
+            <button class="btn btn-primary" onclick="openModal()">+ Add Product</button>
+        </div>
+
+        <table class="mt-2">
+            <thead>
+                <tr>
+                    <th>Image</th>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="productTableBody">
+                <!-- Rendered JS -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ADD/EDIT MODAL -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Add Product</h3>
+            <form id="productForm" class="mt-2">
+                <input type="hidden" id="prodId">
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" id="prodName" required>
+                </div>
+                <div class="form-group">
+                    <label>Price (₹)</label>
+                    <input type="number" id="prodPrice" required>
+                </div>
+                <div class="form-group">
+                    <label>Product Image</label>
+                    <input type="file" id="prodImageFile" accept="image/*" onchange="previewImage()">
+                    <input type="hidden" id="prodImageBase64">
+                    <div style="margin-top: 10px;">
+                        <img id="imagePreview" src=""
+                            style="max-width: 100px; max-height: 100px; display: none; border-radius: var(--radius); border: 1px solid #ddd;">
+                    </div>
+                </div>
+                <!-- Description Field Added -->
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="prodDesc" required></textarea>
+                </div>
+                <div class="d-flex" style="justify-content: flex-end; gap: 10px;">
+                    <button type="button" class="btn" onclick="closeModal()" style="background:#ccc">Cancel</button>
+                    <button type="submit" class="btn btn-secondary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/main.js"></script>
+    <script>
+        checkAuth('admin');
+
+        function renderProducts() {
+            const products = getProducts();
+            const tbody = document.getElementById('productTableBody');
+            tbody.innerHTML = '';
+
+            products.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><img src="${p.image}" alt="${p.name}" style="width: 50px; height: 50px; object-fit: cover;"></td>
+                    <td>${p.name}</td>
+                    <td>₹${p.price}</td>
+                    <td>
+                        <button class="btn btn-primary" style="padding: 5px 10px; font-size: 0.8rem;" onclick='editProduct(${JSON.stringify(p)})'>Edit</button>
+                        <button class="btn btn-danger" style="padding: 5px 10px; font-size: 0.8rem;" onclick="removeProduct(${p.id})">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        /* Image Upload Logic */
+        function previewImage() {
+            const file = document.getElementById('prodImageFile').files[0];
+            const preview = document.getElementById('imagePreview');
+            const hiddenInput = document.getElementById('prodImageBase64');
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onloadend = function () {
+                    preview.src = reader.result;
+                    preview.style.display = 'block';
+                    hiddenInput.value = reader.result;
+                }
+                reader.readAsDataURL(file);
+            } else {
+                preview.src = "";
+                preview.style.display = 'none';
+            }
+        }
+
+        /* Modal Logic */
+        const modal = document.getElementById('productModal');
+
+        function openModal() {
+            // Reset form
+            document.getElementById('productForm').reset();
+            document.getElementById('prodId').value = '';
+            document.getElementById('modalTitle').innerText = 'Add Product';
+            document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('prodImageBase64').value = '';
+
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
+        }
+
+        function editProduct(p) {
+            document.getElementById('prodId').value = p.id;
+            document.getElementById('prodName').value = p.name;
+            document.getElementById('prodPrice').value = p.price;
+            document.getElementById('prodDesc').value = p.description || '';
+
+            // Set Image
+            document.getElementById('prodImageBase64').value = p.image;
+            document.getElementById('imagePreview').src = p.image;
+            document.getElementById('imagePreview').style.display = 'block';
+
+            document.getElementById('modalTitle').innerText = 'Edit Product';
+            modal.style.display = 'flex';
+        }
+
+        function removeProduct(id) {
+            if (confirm('Are you sure?')) {
+                deleteProduct(id);
+                renderProducts();
+            }
+        }
+
+        document.getElementById('productForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const id = document.getElementById('prodId').value;
+            const name = document.getElementById('prodName').value;
+            const price = Number(document.getElementById('prodPrice').value);
+            const desc = document.getElementById('prodDesc').value;
+            // Use uploaded base64 or default if empty (only for new products, edits keep old if not changed)
+            let image = document.getElementById('prodImageBase64').value;
+
+            if (!image) {
+                image = 'https://placehold.co/300x200/E3F2FD/007bff?text=' + name;
+            }
+
+            const product = { name, price, image, description: desc };
+
+            if (id) {
+                // Update
+                product.id = id;
+                updateProduct(product);
+            } else {
+                // Add
+                addProduct(product);
+            }
+            closeModal();
+            renderProducts();
+        });
+
+        renderProducts();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders - Milk Dairy</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container d-flex justify-between align-center">
+            <div class="nav-brand">Milk Dairy</div>
+            <div class="nav-links">
+                <a href="user-dashboard.html">Dashboard</a>
+                <a href="products.html">Products</a>
+                <a href="cart.html">Cart</a>
+                <a href="#" class="active" style="color:var(--primary-color)">My Orders</a>
+                <a href="profile.html">Profile</a>
+                <a href="#" onclick="logout()">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2>Order History</h2>
+        <div class="d-grid mt-2" id="ordersList">
+            <!-- Rendered JS -->
+        </div>
+    </div>
+
+    <script src="../js/main.js"></script>
+    <script>
+        checkAuth('user');
+
+        function renderOrders() {
+            const user = getCurrentUser();
+            const orders = getUserOrders(user.id).reverse();
+            const container = document.getElementById('ordersList');
+            container.innerHTML = '';
+
+            if (orders.length === 0) {
+                container.innerHTML = '<p>No orders found.</p>';
+                return;
+            }
+
+            orders.forEach(o => {
+                let color = 'orange';
+                if (o.status === 'Delivered') color = 'green';
+                if (o.status === 'Processing') color = 'blue';
+
+                const itemsString = o.items.map(i => `${i.name} (x${i.qty})`).join(', ');
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="d-flex justify-between">
+                        <h4>Order #${o.id}</h4>
+                        <span style="color:${color}; font-weight:bold;">${o.status}</span>
+                    </div>
+                    <p class="mt-1"><strong>Date:</strong> ${o.date}</p>
+                    <p><strong>Items:</strong> ${itemsString}</p>
+                    <p class="mt-1" style="font-size: 1.2rem;"><strong>Total: ₹${o.total}</strong></p>
+                 `;
+                container.appendChild(card);
+            });
+        }
+
+        renderOrders();
+    </script>
+</body>
+
+</html>

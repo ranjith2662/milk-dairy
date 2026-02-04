@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Orders - Milk Dairy</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container d-flex justify-between align-center">
+            <div class="nav-brand">Milk Dairy Admin</div>
+            <div class="nav-links">
+                <a href="admin-dashboard.html">Dashboard</a>
+                <a href="manage-products.html">Products</a>
+                <a href="#" class="active" style="color:var(--secondary-color)">Orders</a>
+                <a href="manage-users.html">Users</a>
+                <a href="#" onclick="logout()">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2>Manage Orders</h2>
+        <table class="mt-2">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>User</th>
+                    <th>Date</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="orderTableBody">
+            </tbody>
+        </table>
+    </div>
+
+    <script src="../js/main.js"></script>
+    <script>
+        checkAuth('admin');
+
+        function renderOrders() {
+            const orders = getAllOrders().reverse(); // Show newest first
+            const tbody = document.getElementById('orderTableBody');
+            tbody.innerHTML = '';
+
+            orders.forEach(o => {
+                // Status Color
+                let color = 'orange';
+                if (o.status === 'Delivered') color = 'green';
+                if (o.status === 'Processing') color = 'blue';
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${o.id}</td>
+                    <td>${o.userName} (ID: ${o.userId})</td>
+                    <td>${o.date}</td>
+                    <td>₹${o.total}</td>
+                    <td style="color:${color}; font-weight:bold;">${o.status}</td>
+                    <td>
+                        <select onchange="changeStatus('${o.id}', this.value)" style="padding: 5px; border-radius: 4px;">
+                            <option value="Pending" ${o.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                            <option value="Processing" ${o.status === 'Processing' ? 'selected' : ''}>Processing</option>
+                            <option value="Delivered" ${o.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                        </select>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function changeStatus(id, newStatus) {
+            updateOrderStatus(id, newStatus);
+            renderOrders();
+        }
+
+        renderOrders();
+    </script>
+</body>
+
+</html>

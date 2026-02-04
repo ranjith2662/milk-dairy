@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Cart - Milk Dairy</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container d-flex justify-between align-center">
+            <div class="nav-brand">Milk Dairy</div>
+            <div class="nav-links">
+                <a href="user-dashboard.html">Dashboard</a>
+                <a href="products.html">Products</a>
+                <a href="#" class="active" style="color:var(--primary-color)">Cart</a>
+                <a href="orders.html">My Orders</a>
+                <a href="profile.html">Profile</a>
+                <a href="#" onclick="logout()">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2>Your Cart</h2>
+        <div class="card mt-2">
+            <table id="cartTable">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Price</th>
+                        <th>Qty</th>
+                        <th>Total</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="cartBody">
+                </tbody>
+            </table>
+
+            <div class="d-flex justify-between align-center mt-2"
+                style="padding-top: 20px; border-top: 1px solid #eee;">
+                <h3>Grand Total: ₹<span id="grandTotal">0</span></h3>
+                <button class="btn btn-secondary" onclick="doCheckout()">Checkout</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/main.js"></script>
+    <script>
+        checkAuth('user');
+
+        function renderCart() {
+            const cart = getCart();
+            const tbody = document.getElementById('cartBody');
+            tbody.innerHTML = '';
+            let total = 0;
+
+            if (cart.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center">Cart is empty</td></tr>';
+            }
+
+            cart.forEach(item => {
+                const lineTotal = item.price * item.qty;
+                total += lineTotal;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>₹${item.price}</td>
+                    <td>${item.qty}</td>
+                    <td>₹${lineTotal}</td>
+                    <td><button class="btn btn-danger" style="padding: 5px 10px;" onclick="removeFromCart(${item.id}); renderCart();">X</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('grandTotal').innerText = total;
+        }
+
+        function doCheckout() {
+            if (placeOrder()) {
+                alert('Order placed successfully!');
+                window.location.href = 'orders.html';
+            }
+        }
+
+        renderCart();
+    </script>
+</body>
+
+</html>
